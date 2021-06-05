@@ -112,3 +112,4 @@ x_data = x_data.rename(columns = {'total_dengue_cases': 'cumulative_dengue_cases
 x_data = x_data.drop(columns = ['previous_epi_week_cases'])
 
 x_df = x_data.copy()
+x_df.to_csv('Datasets/dengue_data.csv.gz', index=False)
