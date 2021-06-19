@@ -102,14 +102,29 @@ for year in years:
 x_data = pd.concat(all_years_data)
 x_data.epi_week = pd.to_numeric(x_data.epi_week, downcast ='integer', errors='coerce')
 x_data['epi_week_start_date'] = x_data.apply(lambda x: pd.to_datetime(Week(x.year, x.epi_week).startdate()), axis=1)
+x_data['date'] = x_data.epi_week_start_date
+x_data['month'] = x_data.epi_week_start_date.dt.month
+x_data['day'] = x_data.epi_week_start_date.dt.day
+
+for a in ['epi_week_start_date','date']:
+    x_data[a] = pd.to_datetime(x_data[a])
 
 # and generating no cases per epi week
 x_data = x_data.sort_values(by=['country_or_subregion','year','epi_week'])
 x_data['previous_epi_week_cases'] = x_data.groupby(by=['country_or_subregion','year'])['total_dengue_cases'].shift(1)
 x_data['dengue_cases_per_epi_week'] = x_data['total_dengue_cases'] - x_data.previous_epi_week_cases.fillna(0)
 
+x_data['previous_epi_week_deaths'] = x_data.groupby(by=['country_or_subregion','year'])['deaths'].shift(1)
+x_data['dengue_deaths_per_epi_week'] = x_data['deaths'] - x_data.previous_epi_week_deaths.fillna(0)
+
 x_data = x_data.rename(columns = {'total_dengue_cases': 'cumulative_dengue_cases'})
 x_data = x_data.drop(columns = ['previous_epi_week_cases'])
 
+x_data = x_data.rename(columns = {'deaths': 'cumulative_deaths',
+                                  'dengue_deaths_per_epi_week': 'no_deaths',
+                                  'dengue_cases_per_epi_week': 'no_cases',
+                                  'country_or_subregion': 'country',
+                                  'cumulative_dengue_cases': 'cumulative_cases'
+                                  })
 x_df = x_data.copy()
 x_df.to_csv('Datasets/dengue_data.csv.gz', index=False)

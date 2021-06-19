@@ -36,5 +36,17 @@ covid = cases.set_index(['country','state','date']).join(
 
 covid['year'] = covid.date.dt.year
 covid['month'] = covid.date.dt.month
+covid['day'] = covid.date.dt.day
 
+covid = covid.sort_values(['country','date'])
+covid['previous_day_cases'] = covid.groupby(['country'])['no_cases'].shift(1)
+covid['non_cumulative_cases'] = covid['no_cases'] - covid['previous_day_cases'].fillna(0)
+
+covid['previous_day_deaths'] = covid.groupby(['country'])['no_deaths'].shift(1)
+covid['non_cumulative_deaths'] = covid['no_deaths'] - covid['previous_day_deaths'].fillna(0)
+
+covid = covid.rename(columns = {'no_cases': 'cumulative_cases',
+                                'no_deaths': 'cumulative_deaths',
+                                'non_cumulative_cases': 'no_cases',
+                                'non_cumulative_deaths': 'no_deaths'})
 covid.to_csv('Datasets/covid_19_data.csv.gz', index=False)
